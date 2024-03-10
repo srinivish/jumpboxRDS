@@ -14,14 +14,12 @@
 02-internet-gateway - Done
 03-subnet - Done
 04-eip-nat-gateway
-04-route-table - WIP
-05-security-group - WIP
+04-route-table - Done
+05-security-group - Done
 06-jumpbox-EC2-instance - Working Done
-07-RDS-instance
+07-RDS-instance - Done
 08-sql-commands
 09-insert.sql
-
-
 
 # References
 https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_GettingStarted.CreatingConnecting.MySQL.html
