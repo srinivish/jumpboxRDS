@@ -1,0 +1,104 @@
+# install MySQL client on Ubuntu
+apt-get install mysql-client
+
+create .my.cnf File
+[client]
+host=your_rds_host
+user=your_mysql_user
+password=your_mysql_password
+
+chmod 400 .my.cnf
+
+above setup will help connect to RDS just by typing mysql on command line
+mysql -h rds-mysql-instance.cdoa8acge3gr.us-east-1.rds.amazonaws.com -P 3306 -u admin -p
+
+# create table in MySQL
+CREATE TABLE person ( person_id INT NOT NULL PRIMARY KEY, fname VARCHAR(40) NULL, lname VARCHAR(40) NULL, age INT NOT NULL, created TIMESTAMP );
+
+# insert records in MySQL hosted in Docker Container
+
+#!/bin/bash
+
+# MySQL Container Details
+MYSQL_CONTAINER_NAME="your_mysql_container_name"
+MYSQL_USER="your_mysql_user"
+MYSQL_PASSWORD="your_mysql_password"
+MYSQL_DATABASE="your_mysql_database"
+
+# Function to generate random strings
+generate_random_string() {
+    echo $(cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w $1 | head -n 1)
+}
+
+# Connect to MySQL Docker container and load 25 records
+for ((i=1; i<=25; i++)); do
+    fname=$(generate_random_string 8)
+    lname=$(generate_random_string 8)
+    age=$((RANDOM%100))
+
+    docker exec $MYSQL_CONTAINER_NAME mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE \
+    -e "INSERT INTO person (person_id, fname, lname, age, created) VALUES ($i, '$fname', '$lname', $age, NOW());"
+
+    if [ $? -eq 0 ]; then
+        echo "Inserted record $i"
+    else
+        echo "Failed to insert record $i"
+    fi
+done
+
+echo "Database populated with 25 records."
+
+
+# insert 25 records in mySQL hosted in RDS using shell script 
+
+#!/bin/bash
+
+# RDS Database Details
+RDS_HOSTNAME="rds-mysql-instance.cdoa8acge3gr.us-east-1.rds.amazonaws.com"
+RDS_PORT="3306"
+RDS_USERNAME="admin"
+RDS_PASSWORD="your_rds_password"
+RDS_DATABASE="your_rds_database"
+
+# Function to generate random strings
+generate_random_string() {
+    echo $(cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w $1 | head -n 1)
+}
+
+# Connect to RDS MySQL database and load 25 records
+for ((i=1; i<=25; i++)); do
+    fname=$(generate_random_string 8)
+    lname=$(generate_random_string 8)
+    age=$((RANDOM%100))
+
+    mysql -h $RDS_HOSTNAME -P $RDS_PORT -u $RDS_USERNAME -p$RDS_PASSWORD $RDS_DATABASE \
+    -e "INSERT INTO person (person_id, fname, lname, age, created) VALUES ($i, '$fname', '$lname', $age, NOW());"
+
+    if [ $? -eq 0 ]; then
+        echo "Inserted record $i"
+    else
+        echo "Failed to insert record $i"
+    fi
+done
+
+echo "Database populated with 25 records."
+
+
+# insert 25 records in mySQL hosted in RDS using python script
+
+import mysql.connector
+
+# RDS Database Details
+RDS_HOSTNAME = "rds-mysql-instance.cdoa8acge3gr.us-east-1.rds.amazonaws.com"
+RDS_PORT = 3306
+RDS_USERNAME = "admin"
+RDS_PASSWORD = "your_rds_password"
+RDS_DATABASE = "your_rds_database"
+
+# Connect to RDS MySQL database
+connection = mysql.connector.connect(
+    host=RDS_HOSTNAME,
+    port=RDS_PORT,
+    user=RDS_USERNAME,
+    password=RDS_PASSWORD,
+    database=RDS_DATABASE
